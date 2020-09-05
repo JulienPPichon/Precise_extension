@@ -11,7 +11,7 @@ def get_args(argv = None):
 	parser = argparse.ArgumentParser()
 	parser.add_argument("-i", "--filename", help="take filename.gtf as input")
 	parser.add_argument("-s", "--stringtie_output", help="GTF output from stringtie")
-	parser.add_argument("-o", "--output", help="name of the gtf output file with extended genes")
+	parser.add_argument("-o", "--output", help="name of the gtf output file with extended genes", default = False)
 	return parser.parse_args(argv)
 
 
@@ -397,7 +397,10 @@ if __name__ == "__main__":
 	dict_exon_signal = find_exon(args.stringtie_output)
 	dict_all, dict_transcript, header, exons_wrong_interval = gtf_to_dict(args.filename, first_chromosome, final_transcript, gene_col, transcript_col)
 	precisely_extended_dict = precise_extension(dict_transcript, dict_exon_signal, gene_col)
-	dict_to_gtf(precisely_extended_dict, args.output)
+	if args.output is False:
+		dict_to_gtf(precisely_extended_dict, args.filename + ".extended")
+	else:	
+		dict_to_gtf(precisely_extended_dict, args.output)
 	
 	
 	

@@ -143,6 +143,7 @@ def gtf_to_dict(filename_ref, first_chromosome, final_transcript, gene_col, tran
 
 def precise_extension(dict_transcript, dict_exon_signal, gene_col):
 	precisely_extended_dict = {}
+	overlapped_transcripts = []
 	coverage = 5000 # Average length of an exon = 200pb.
 	# Boolean if the introns of a gene car be the exon of an other one.
 	intron_exon = False
@@ -169,7 +170,7 @@ def precise_extension(dict_transcript, dict_exon_signal, gene_col):
 								# If transcripts are already overlapping before extension, error in the original GTF.
 								else:
 									overlap_start = transcript.end + 1
-									print("error")
+									overlapped_transcripts.append(transcript)
 							for exon_in_transcript in transcript_in_iv.data:
 								if int(exon_in_transcript[3]) > transcript.end:
 									exons_it[int(exon_in_transcript[3])+ 1:int(exon_in_transcript[4])] = "exon"
@@ -280,7 +281,7 @@ def precise_extension(dict_transcript, dict_exon_signal, gene_col):
 								# If transcripts are already overlapping before extension, error in the original GTF.
 								else:
 									overlap_start = transcript.begin - 1
-									print("error")
+									overlapped_transcripts.append(transcript)
 							for exon_in_transcript in transcript_in_iv.data:
 								if int(exon_in_transcript[4]) < transcript.begin:
 									exons_it[int(exon_in_transcript[3])+ 1:int(exon_in_transcript[4])] = "exon"
@@ -373,7 +374,10 @@ def precise_extension(dict_transcript, dict_exon_signal, gene_col):
 					precisely_extended_dict[chromosome][int(new_transcript_end):int(transcript.end)] = modified_transcript.data
 				# Otherwise, unmodified transcript is added.
 				else:
-					precisely_extended_dict[chromosome][int(transcript.begin):int(transcript.end)] = transcript.data				
+					precisely_extended_dict[chromosome][int(transcript.begin):int(transcript.end)] = transcript.data
+	with open("errors_file.txt", "w") as filout:
+		for ovlp_transcript in overlapped_transcripts:
+			filout.write("{}\n".format(ovlp_transcript.data[0]))
 	return precisely_extended_dict
 
 

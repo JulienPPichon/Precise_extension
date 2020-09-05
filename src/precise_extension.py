@@ -12,6 +12,7 @@ def get_args(argv = None):
 	parser.add_argument("-i", "--filename", help="take filename.gtf as input")
 	parser.add_argument("-s", "--stringtie_output", help="GTF output from stringtie")
 	parser.add_argument("-o", "--output", help="name of the gtf output file with extended genes", default = False)
+	parser.add_argument("-c", "--coverage_stringtie", type=int, help="Absolute minimum coverage estimated by Stringtie to keep as UTR signal (will be revaluated depending the exon's length", default = 25)
 	return parser.parse_args(argv)
 
 
@@ -141,10 +142,10 @@ def gtf_to_dict(filename_ref, first_chromosome, final_transcript, gene_col, tran
 	return [dict_all, dict_transcript, header, exons_wrong_interval]
 
 
-def precise_extension(dict_transcript, dict_exon_signal, gene_col):
+def precise_extension(dict_transcript, dict_exon_signal, gene_col, coverage_stringtie):
 	precisely_extended_dict = {}
 	overlapped_transcripts = []
-	coverage = 5000 # Average length of an exon = 200pb.
+	coverage = coverage_stringtie * 200 # Average length of an exon = 200pb.
 	# Boolean if the introns of a gene car be the exon of an other one.
 	intron_exon = False
 	for chromosome in dict_transcript:
@@ -400,7 +401,7 @@ if __name__ == "__main__":
 	gene_col, transcript_col, first_chromosome, final_transcript = find_pos(args.filename)
 	dict_exon_signal = find_exon(args.stringtie_output)
 	dict_all, dict_transcript, header, exons_wrong_interval = gtf_to_dict(args.filename, first_chromosome, final_transcript, gene_col, transcript_col)
-	precisely_extended_dict = precise_extension(dict_transcript, dict_exon_signal, gene_col)
+	precisely_extended_dict = precise_extension(dict_transcript, dict_exon_signal, gene_col, args.coverage_stringtie)
 	if args.output is False:
 		dict_to_gtf(precisely_extended_dict, args.filename + ".extended")
 	else:	
